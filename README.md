@@ -7,7 +7,7 @@
 ## Overview
 
 <div align="center">
-  <img src="./figs/intro_v3.png" width="100%" alt="Limitations of existing agentic KBQA with process supervision"/>
+  <img src="./figs/intro_v3.png" width="90%" alt="Limitations of existing agentic KBQA with process supervision"/>
 </div>
 
 Knowledge Base Question Answering (KBQA) leverages the rich structure and semantics of large-scale knowledge bases (KBs) to answer natural language questions, and is crucial for applications such as search engines, medical assistants, and financial risk analysis. While existing KBQA systems handle simple questions reasonably well, they still struggle with complex, real-world questions that require long-horizon reasoning and adaptation to heterogeneous KB schemas.
@@ -15,7 +15,7 @@ Knowledge Base Question Answering (KBQA) leverages the rich structure and semant
 Recent *agentic* KBQA methods let large language models (LLMs) plan, call tools, and interact with KBs, but they typically depend on **process supervision**: they learn from ideal, hand-crafted (or synthesized) reasoning traces derived from gold logical forms. This makes them brittle to noisy tool interactions and limits their flexibility to explore alternative reasoning strategies.
 
 <div align="center">
-  <img src="./figs/main.jpeg" width="100%" alt="Overview of the KnowCoder-A1 training framework"/>
+  <img src="./figs/main.jpeg" width="90%" alt="Overview of the KnowCoder-A1 training framework"/>
 </div>
 
 In this work, we propose **KnowCoder-A1**, an LLM-based KBQA agent that learns to reason over KBs primarily from **outcome supervision**. Instead of imitating a single “perfect” trajectory, our model is trained to autonomously decompose tasks, invoke tools, refine formal queries (e.g., SPARQL), and execute them to obtain correct answers.
@@ -45,7 +45,6 @@ pip3 install -r requirements.txt
 We use **verl** as the reinforcement learning framework. It is included as a git submodule:
 
 ```bash
-cd Agent-KBR1
 # Initialize and update git submodules
 git submodule update --init --recursive
 
@@ -204,16 +203,13 @@ Supported datasets include:
 If you find this work helpful for your research, please cite:
 
 ```bibtex
-@article{knowcoder-a1,
-  title        = {KnowCoder-A1: Incentivizing Agentic Reasoning Capability with Outcome Supervision for KBQA},
-  author       = {To be added},
-  journal      = {To be added},
-  year         = {To be added},
-  url          = {To be added}
+@article{chen2025knowcoder,
+  title={KnowCoder-A1: Incentivizing Agentic Reasoning Capability with Outcome Supervision for KBQA},
+  author={Chen, Zhuo and Wang, Fei and Li, Zixuan and Zhang, Zhao and Ding, Weiwei and Yang, Chuanguang and Xu, Yongjun and Jin, Xiaolong and Guo, Jiafeng},
+  journal={arXiv preprint arXiv:2510.25101},
+  year={2025}
 }
 ```
-
-(We will update this entry once the paper is released.)
 
 ---
 
