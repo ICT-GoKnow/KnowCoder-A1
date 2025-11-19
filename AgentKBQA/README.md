@@ -27,7 +27,7 @@ pip install gdown chromadb requests
 ### Install Virtuoso
 
 1.  Download the package `virtuoso-opensource.x86_64-generic_glibc25-linux-gnu.tar.gz` from the link below:
-    [OpenLink Virtuoso (Open-Source Edition) download | SourceForge.net](https://sourceforge.net/projects/virtuoso/)
+    [virtuoso-opensource](https://github.com/openlink/virtuoso-opensource/releases)
 
 2.  After downloading, extract the archive (you can delete the `.tar.gz` file afterward).
 

@@ -62,7 +62,7 @@ pip3 install flash-attn==2.7.3 --no-build-isolation
 
 We provide a comprehensive, beginner-friendly tutorial that explains how to build the tools from raw DB files. All tools are encapsulated to support asynchronous invocation via HTTP APIs.
 
-For a detailed setup guide, please refer to [Database and Tool Setup](./AgentKBQA/readme.md).
+For a detailed setup guide, please refer to [Database and Tool Setup](./AgentKBQA/README.md).
 
 ---
 
