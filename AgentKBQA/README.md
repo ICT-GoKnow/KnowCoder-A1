@@ -40,7 +40,7 @@ pip install gdown chromadb requests
     ```bash
     # Add these lines to ~/.bashrc
     export VIRTUOSO_HOME=<path-to-your-virtuoso-directory>/virtuoso-opensource
-    export PATH=.:${VIRTUO SO_HOME}/bin:$PATH
+    export PATH=.:${VIRTUOSO_HOME}/bin:$PATH
     ```
 
 4.  Apply the changes to your current session or restart the terminal.
@@ -68,6 +68,8 @@ First, download the Freebase knowledge base file using `gdown`.
 ```bash
 gdown "https://drive.google.com/uc?id=1-chTQ-8UzNQOrnsvONAJvPYk5TZ674X0"
 ```
+
+If you cannot download via gdown, please download it from the webpage and then upload it.
 
 #### Step 2: Place Database File
 
@@ -113,7 +115,7 @@ In a **separate terminal**, execute the following command to build the knowledge
 isql 1111 dba dba
 ```
 
-This will open the SQL interactive mode. Paste the following commands directly into the `isql` prompt. The path `database/fb_filter_eng_fix_literal.gz` works because `DirsAllowed` was set to the project root in the previous step.
+This will open the SQL interactive mode. Paste the following commands directly into the `isql` prompt.
 
 ```sql
 DB.DBA.TTLP_MT(gz_file_open ('database/fb_filter_eng_fix_literal.gz'), '', 'http://freebase.com', 128);
@@ -121,7 +123,7 @@ checkpoint;
 exit;
 ```
 
-The indexing process is time-consuming (10-20 hours). You can monitor the progress in the Virtuoso server terminal (from Step 3).
+The indexing process is time-consuming (10-20 hours).
 
 #### Step 5: Verify Indexing (Optional)
 
@@ -191,7 +193,7 @@ Expected output:
 ```
 Connected to Freebase successfully.
 Loaded 0 timeout queries.
-[{'label': {'type': 'literal', 'xml:lang': 'en', 'value': 'Saint Lucy'}}]
+['Saint Lucy']
 ```
 
 ### 2\. Start HTTP API Server
@@ -201,7 +203,7 @@ Start the Freebase tool APIs as a background service.
 ```bash
 # Using screen (recommended)
 screen -S api-fb -d -m
-screen -S api-fb -X stuff "python api/api_db_server.py --db fb
+screen -S api-fb -X stuff "python api/api_db_server.py --db fb --port 9901
 "
 
 # Or run directly in the foreground

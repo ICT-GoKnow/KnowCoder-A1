@@ -18,7 +18,7 @@ Output:
 """
 
 name_map = {}
-with gzip.open("./fb_filter_eng_fix_literal.gz") as f1:
+with gzip.open("./database/fb_filter_eng_fix_literal.gz") as f1:
     pbar = tqdm(f1, total=955648474)
     for idx, line in enumerate(pbar):
         line = line.decode("utf-8").strip().split("\t")

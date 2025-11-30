@@ -88,5 +88,5 @@ def cache_cvt_predicate_pair_in_fb(debug=True, cpu_num=1):
 
 
 if __name__ == "__main__":
-    # cache_predicate_in_fb()
+    cache_predicate_in_fb()
     cache_cvt_predicate_pair_in_fb(debug=False, cpu_num=os.cpu_count() // 2)
