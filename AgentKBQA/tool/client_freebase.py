@@ -54,7 +54,7 @@ class FreebaseClient:
         from SPARQLWrapper import JSON, SPARQLWrapper, POST
 
         self.client = SPARQLWrapper(end_point, returnFormat=JSON)
-        self.client.setTimeout(120)  # seconds
+        self.client.setTimeout(130)  # seconds, slightly > Virtuoso MaxQueryExecutionTime(120s) to receive its timeout error
         self.es = None
         self.cvt_predicates = None
         self._timeout_query = set()

@@ -2,10 +2,13 @@ import argparse
 import asyncio
 import time
 import os, sys
+import logging
+from datetime import datetime
 from typing import Annotated
 
 import uvicorn
 from fastapi import FastAPI, Form
+
 base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(base_dir)
 from common.constant import API_SERVER_FB, API_SERVER_KQAPRO, API_SERVER_METAQA
@@ -43,24 +46,36 @@ args.host, _ = _url.split("http://")[-1].split(":")
 args.port = int(args.port)
 print(f"db: {args.db}, host: {args.host}, port: {args.port}")
 
-## 分知识库实现动作
-# SearchNodes, SearchGraphPatterns, ExecuteSPARQL = init_actions()
 SearchNodes, SearchTypes, SearchGraphPatterns, ExecuteSPARQL = init_actions()
 
 app = FastAPI()
 
+api_logger = logging.getLogger("api_timing")
+
+SLOW_THRESHOLD = 10
+
 
 @app.post(f"/{args.db}/SearchNodes")
 async def _SearchNodes(query: Annotated[str, Form()] = "", n_results: Annotated[int, Form()] = 10):
+    start = time.time()
     loop = asyncio.get_event_loop()
     result = await loop.run_in_executor(None, SearchNodes, query, n_results)
+    elapsed = time.time() - start
+    tag = "SLOW" if elapsed > SLOW_THRESHOLD else "OK"
+    api_logger.info(f"[{tag}] SearchNodes | {elapsed:.2f}s | query={query[:100]}")
     return result
 
+
 @app.post(f"/{args.db}/SearchTypes")
-async def _SearchNodes(query: Annotated[str, Form()] = "", n_results: Annotated[int, Form()] = 10):
+async def _SearchTypes(query: Annotated[str, Form()] = "", n_results: Annotated[int, Form()] = 10):
+    start = time.time()
     loop = asyncio.get_event_loop()
     result = await loop.run_in_executor(None, SearchTypes, query, n_results)
+    elapsed = time.time() - start
+    tag = "SLOW" if elapsed > SLOW_THRESHOLD else "OK"
+    api_logger.info(f"[{tag}] SearchTypes | {elapsed:.2f}s | query={query[:100]}")
     return result
+
 
 @app.post(f"/{args.db}/SearchGraphPatterns")
 async def _SearchGraphPatterns(
@@ -69,26 +84,23 @@ async def _SearchGraphPatterns(
     topN_vec: Annotated[int, Form()] = 400,
     topN_return: Annotated[int, Form()] = 10,
 ):
-    """
-    def SearchGraphPatterns(
-        sparql: str = None,
-        semantic: str = None,
-        topN_vec=400,
-        topN_return=10,
-    ):
-    """
+    start = time.time()
     loop = asyncio.get_event_loop()
     result = await loop.run_in_executor(None, SearchGraphPatterns, sparql, semantic, topN_vec, topN_return)
+    elapsed = time.time() - start
+    tag = "SLOW" if elapsed > SLOW_THRESHOLD else "OK"
+    api_logger.info(f"[{tag}] SearchGraphPatterns | {elapsed:.2f}s | sparql={sparql[:150]} | semantic={semantic[:80]}")
     return result
 
 
 @app.post(f"/{args.db}/ExecuteSPARQL")
 async def _ExecuteSPARQL(sparql: Annotated[str, Form()] = "", str_mode: Annotated[bool, Form()] = True):
-    """
-    def ExecuteSPARQL(sparql=None, str_mode=True):
-    """
+    start = time.time()
     loop = asyncio.get_event_loop()
     result = await loop.run_in_executor(None, ExecuteSPARQL, sparql, str_mode)
+    elapsed = time.time() - start
+    tag = "SLOW" if elapsed > SLOW_THRESHOLD else "OK"
+    api_logger.info(f"[{tag}] ExecuteSPARQL | {elapsed:.2f}s | sparql={sparql[:200]}")
     return result
 
 
@@ -109,5 +121,47 @@ async def _get_embedding(
 
 
 if __name__ == "__main__":
-    # test_chatgpt()
-    uvicorn.run("api_db_server:app", host=args.host, port=args.port, workers=8)
+    log_dir = os.path.join(base_dir, "logs")
+    os.makedirs(log_dir, exist_ok=True)
+    log_file = os.path.join(log_dir, f"api_db_server_{args.db}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log")
+
+    LOG_CONFIG = {
+        "version": 1,
+        "disable_existing_loggers": False,
+        "formatters": {
+            "standard": {
+                "format": "%(asctime)s [%(name)s] %(levelname)s: %(message)s",
+                "datefmt": "%Y-%m-%d %H:%M:%S",
+            },
+        },
+        "handlers": {
+            "console": {
+                "class": "logging.StreamHandler",
+                "formatter": "standard",
+                "stream": "ext://sys.stdout",
+            },
+            "file": {
+                "class": "logging.FileHandler",
+                "formatter": "standard",
+                "filename": log_file,
+                "encoding": "utf-8",
+            },
+        },
+        "loggers": {
+            "uvicorn": {"handlers": ["console", "file"], "level": "INFO", "propagate": False},
+            "uvicorn.error": {"handlers": ["console", "file"], "level": "INFO", "propagate": False},
+            "uvicorn.access": {"handlers": ["console", "file"], "level": "INFO", "propagate": False},
+            "api_timing": {"handlers": ["console", "file"], "level": "INFO", "propagate": False},
+        },
+    }
+
+    print(f"[LOG] Log file: {log_file}")
+
+    uvicorn.run(
+        "api_db_server:app",
+        host=args.host,
+        port=args.port,
+        workers=8,
+        timeout_keep_alive=150,
+        log_config=LOG_CONFIG,
+    )
