@@ -178,7 +178,7 @@ python tool_prepare/fb_vectorize_type.py
 
 #### Step 1: Download FACC1
 
-Download the FACC1 data to the following directory:
+Download the [FACC1](https://github.com/dki-lab/GrailQA/tree/main/entity_linker/data) data to the following directory:
 
 ```
 database/freebase-info/surface_map_file_freebase_complete_all_mention
