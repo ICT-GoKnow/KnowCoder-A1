@@ -174,11 +174,63 @@ python tool_prepare/fb_vectorization.py
 python tool_prepare/fb_vectorize_type.py
 ```
 
-This will generate vector representations of predicates and types, and index them using ChromaDB.
+### 3\. NEW: FACC1 Entity Popularity for Faster Tool Execution
+
+#### Step 1: Download FACC1
+
+Download the FACC1 data to the following directory:
+
+```
+database/freebase-info/surface_map_file_freebase_complete_all_mention
+```
+
+#### Step 2: Cache FACC1 Entity Popularity
+
+Cache FACC1 entity popularity using sqlite3:
+
+```bash
+python tool_prepare/facc1.py
+```
+
+If everything goes smoothly, you should see the following output:
+
+```
+['m.0fs04cs', 'm.0zjywz4', 'm.0mtgjq8', 'm.0dss9vb', 'm.0msygvy']
+```
 
 -----
 
 ## Start Knowledge Base Tool Service
+
+### 0\. Configure Embedding API
+
+The tool service uses an OpenAI-compatible embedding API for vector search. You need to configure the API key and endpoint in `tool/openai.py` (lines 23-28):
+
+```python
+DEFAULT_KEY = "your-api-key-here"
+client = OpenAI(api_key=DEFAULT_KEY, base_url="https://dashscope.aliyuncs.com/compatible-mode/v1")
+```
+
+  * `DEFAULT_KEY`: Your API key. The default uses Alibaba Cloud DashScope. You can also set it via the environment variable `OPENAI_API_KEY`.
+  * `base_url`: The API endpoint. Change this if you use a different provider.
+  * The embedding model used is `text-embedding-v2` (defined in the `get_embedding` function at line 214).
+
+> **If you cannot access external networks**, you can deploy a local embedding model and serve it as an OpenAI-compatible API:
+>
+> ```bash
+> vllm serve BAAI/bge-base-en-v1.5 --task embed --port 8080
+> ```
+>
+> Then update `tool/openai.py`:
+>
+> ```python
+> DEFAULT_KEY = "not-needed"
+> client = OpenAI(api_key=DEFAULT_KEY, base_url="http://127.0.0.1:8080/v1")
+> ```
+>
+> **Note:** Make sure to also update the `model=` parameter in the `get_embedding` and `get_embedding_batch` functions (lines 214, 249, 257) to match your deployed model name. The embedding dimension must be consistent with what was used during the vector cache preparation step (Section "Tool Preparation > 2. Cache Vector Representations").
+
+-----
 
 ### 1\. Test the Tools
 
@@ -207,7 +259,7 @@ screen -S api-fb -X stuff "python api/api_db_server.py --db fb --port 9901
 "
 
 # Or run directly in the foreground
-python api/api_db_server.py --db fb
+python api/api_db_server.py --db fb --port 9901
 ```
 
 The Freebase tool APIs will be available at `http://localhost:9901`.

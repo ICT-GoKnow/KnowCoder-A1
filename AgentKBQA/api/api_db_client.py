@@ -34,7 +34,7 @@ def get_actions_api(db):
             "query": query,
             "n_results": n_results,
         }
-        response = requests.post(url, data=data, timeout=120, verify=False)
+        response = requests.post(url, data=data, timeout=150, verify=False)
         return response.json()
     def SearchTypes(query="", n_results=n_results):
         url = base_url + "SearchTypes"
@@ -42,7 +42,7 @@ def get_actions_api(db):
             "query": query,
             "n_results": n_results,
         }
-        response = requests.post(url, data=data, timeout=120, verify=False)
+        response = requests.post(url, data=data, timeout=150, verify=False)
         return response.json()
 
     def SearchGraphPatterns(sparql="", semantic="", topN_return=10, return_fact_triple=True):
@@ -57,7 +57,7 @@ def get_actions_api(db):
             "topN_return": topN_return,
         }
         try:
-            response = requests.post(url, data=data, timeout=300, verify=False)
+            response = requests.post(url, data=data, timeout=150, verify=False)
             return response.json()
         except Exception as e:
             print_exc()
@@ -70,7 +70,7 @@ def get_actions_api(db):
             "sparql": sparql,
             "str_mode": str_mode,
         }
-        response = requests.post(url, data=data, timeout=120, verify=False)
+        response = requests.post(url, data=data, timeout=150, verify=False)
         return response.json()
 
     return SearchNodes, SearchTypes, SearchGraphPatterns, ExecuteSPARQL

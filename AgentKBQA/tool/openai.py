@@ -171,6 +171,9 @@ def get_vec_cache(name: str) -> Optional[List[float]]:
     return None
 
 def insert_vec_cache(name: str, vec: List[float]):
+    # 确保数据库表已创建
+    init_db()
+    
     if get_vec_cache(name):
         return
 
@@ -196,8 +199,6 @@ def insert_vec_cache(name: str, vec: List[float]):
                 conn.commit()
         except Exception as retry_error:
             print(f"[insert_vec_cache] Retry failed: {retry_error}")
-    except Exception as e:
-        print(f"[insert_vec_cache] Error: {e}")
 
 def get_embedding(
     text: str,
@@ -219,6 +220,9 @@ def get_embedding_batch(
     texts: List[str],
     model="qwen",
 ) -> list[float]:
+    # 确保数据库表已创建
+    init_db()
+    
     cache_results = {}
     try:
         with connect_db() as conn:
@@ -258,22 +262,27 @@ def get_embedding_batch(
         try:
             with connect_db() as conn:
                 cursor = conn.cursor()
-                insert_data = [
-                    (unseen_text + model, json.dumps(vec))
-                    for unseen_text, vec in zip(unseen_texts, vec_batch)
-                ]
-                cursor.executemany(
-                    "INSERT OR REPLACE INTO vec_cache (name, vec) VALUES (?, ?)",
-                    insert_data
-                )
+                for text, vec in zip(unseen_texts, vec_batch):
+                    cursor.execute(
+                        "INSERT OR REPLACE INTO vec_cache (name, vec) VALUES (?, ?)",
+                        (text + model, json.dumps(vec)),
+                    )
                 conn.commit()
         except Exception as e:
             print(f"batch insert cache failed: {e}")
 
-        for unseen_text, vec in zip(unseen_texts, vec_batch):
-            cache_results[unseen_text + model] = vec
-
-    return [cache_results[text + model] for text in texts]
+    # 合并缓存结果和新计算的结果
+    result = []
+    for text in texts:
+        key = text + model
+        if key in cache_results:
+            result.append(cache_results[key])
+        else:
+            # 从新计算的向量中获取
+            idx = unseen_texts.index(text)
+            result.append(vec_batch[idx])
+    
+    return result
 
 @retry(wait=wait_fixed(2), stop=stop_after_attempt(2))
 def get_embedding_openai(
